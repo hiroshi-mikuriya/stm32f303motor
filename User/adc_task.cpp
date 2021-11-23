@@ -10,43 +10,47 @@
 namespace
 {
 /// DMAが書き込むバッファ
-uint16_t s_dmaBuffer[COUNT_OF_MOTORS] = {0};
+__I uint16_t s_dmaBuffer[COUNT_OF_MOTORS] = {0};
 /// アナログ値
-uint16_t s_analog[COUNT_OF_MOTORS] = {0};
+__IO uint16_t s_analog[COUNT_OF_MOTORS] = {0};
+/// ADCペリフェラル
+#define ADCx ADC2
+/// DMAペリフェラル
+#define DMAx DMA1
+/// DMAチャネル
+#define DMA_CHANNEL LL_DMA_CHANNEL_2
+/// DMA割り込み番号
+#define DMA_IRQn DMA1_Channel2_IRQn
 } // namespace
 
 extern "C"
 {
   void adcTaskInit(void)
   {
-    ADC_TypeDef *const adc = ADC2;
-    DMA_TypeDef *const dma = DMA1;
-    constexpr uint32_t channel = LL_DMA_CHANNEL_2;
-    LL_DMA_ConfigAddresses(                                      //
-        dma, channel,                                            //
-        LL_ADC_DMA_GetRegAddr(adc, LL_ADC_DMA_REG_REGULAR_DATA), //
-        reinterpret_cast<uint32_t>(s_dmaBuffer),                 //
-        LL_DMA_DIRECTION_PERIPH_TO_MEMORY                        //
+    LL_DMA_ConfigAddresses(                                       //
+        DMAx, DMA_CHANNEL,                                        //
+        LL_ADC_DMA_GetRegAddr(ADCx, LL_ADC_DMA_REG_REGULAR_DATA), //
+        reinterpret_cast<uint32_t>(s_dmaBuffer),                  //
+        LL_DMA_DIRECTION_PERIPH_TO_MEMORY                         //
     );
-    LL_DMA_SetDataLength(dma, channel, COUNT_OF_MOTORS);
-    LL_DMA_EnableIT_TC(dma, channel);
-    LL_DMA_EnableIT_TE(dma, channel);
-    LL_DMA_EnableChannel(dma, channel);
-    LL_ADC_Enable(adc);
-    LL_ADC_REG_StartConversion(adc);
+    LL_DMA_SetDataLength(DMAx, DMA_CHANNEL, COUNT_OF_MOTORS);
+    LL_DMA_EnableIT_TC(DMAx, DMA_CHANNEL);
+    LL_DMA_EnableIT_TE(DMAx, DMA_CHANNEL);
+    LL_DMA_EnableChannel(DMAx, DMA_CHANNEL);
+    LL_ADC_Enable(ADCx);
+    LL_ADC_REG_StartConversion(ADCx);
   }
   /// @brief ADCタスク<br>
   /// 可変抵抗の抵抗値を定期的に読み取りメッセージを送信する
   /// @param [in] res タスク共有リソース
   void adcTaskProc(TaskResource *res)
   {
-    constexpr IRQn_Type IRQn = DMA1_Channel2_IRQn;
-    NVIC_DisableIRQ(IRQn);
+    NVIC_DisableIRQ(DMA_IRQn);
     for (int i = 0; i < COUNT_OF_MOTORS; ++i)
     {
       res[i].analog = s_analog[i];
     }
-    NVIC_EnableIRQ(IRQn);
+    NVIC_EnableIRQ(DMA_IRQn);
   }
   /// @brief ADC変換完了DMA割り込み
   void adcCpltIRQ(void)

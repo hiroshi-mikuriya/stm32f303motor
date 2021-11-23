@@ -9,6 +9,7 @@
 !*.cpp
 !*.h
 !*.hpp
+!*.jpg
 !*.ioc
 !*.md
 !*.s

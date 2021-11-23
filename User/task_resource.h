@@ -12,9 +12,9 @@
 #define COUNT_OF_MOTORS 2
 
 /// タスク共有リソース
-typedef struct TaskResource
+typedef struct
 {
-  uint16_t btnPushedEvent;
-  uint16_t analog;
-  int64_t encoder;
+  uint16_t btnPushedEvent; ///< ボタン押下イベント有無 @arg 0 イベントなし @arg 1 イベントあり
+  uint16_t analog;         ///< アナログ値（0 - 1023）
+  int64_t encoder;         ///< エンコーダ値
 } TaskResource;

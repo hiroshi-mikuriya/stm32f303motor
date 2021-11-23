@@ -57,7 +57,14 @@ static void MX_TIM3_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_TIM7_Init(void);
 /* USER CODE BEGIN PFP */
-
+extern void keyTaskInit(void);
+extern void encoderTaskInit(void);
+extern void adcTaskInit(void);
+extern void motorTaskInit(void);
+extern void keyTaskProc(TaskResource *);
+extern void encoderTaskProc(TaskResource *);
+extern void adcTaskProc(TaskResource *);
+extern void motorTaskProc(TaskResource *);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,10 +117,6 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-  extern void keyTaskInit(void);
-  extern void encoderTaskInit(void);
-  extern void adcTaskInit(void);
-  extern void motorTaskInit(void);
   keyTaskInit();
   encoderTaskInit();
   adcTaskInit();
@@ -122,20 +125,17 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  TaskResource res[2] = {0};
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    extern void keyTaskProc(TaskResource *);
-    extern void encoderTaskProc(TaskResource *);
-    extern void adcTaskProc(TaskResource *);
-    extern void motorTaskProc(TaskResource *);
+    TaskResource res[2] = {0};
     keyTaskProc(res);
     encoderTaskProc(res);
     adcTaskProc(res);
     motorTaskProc(res);
+    LL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
   }
   /* USER CODE END 3 */
 }
@@ -514,7 +514,7 @@ static void MX_TIM7_Init(void)
   /* USER CODE END TIM7_Init 1 */
   TIM_InitStruct.Prescaler = 63;
   TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 999;
+  TIM_InitStruct.Autoreload = 9999;
   LL_TIM_Init(TIM7, &TIM_InitStruct);
   LL_TIM_DisableARRPreload(TIM7);
   LL_TIM_SetTriggerOutput(TIM7, LL_TIM_TRGO_RESET);

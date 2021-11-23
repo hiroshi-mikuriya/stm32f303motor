@@ -71,12 +71,11 @@ public:
   }
 
   /// @brief タスク処理実行 @param [in] res タスク共通リソース
-  void run(TaskResource &res)
+  void run(TaskResource const &res)
   {
     if (res.btnPushedEvent)
     {
       running_ = !running_;
-      res.btnPushedEvent = 0;
     }
     updateGpio();
     setCompareValue_(pwmTim_, res.analog);
